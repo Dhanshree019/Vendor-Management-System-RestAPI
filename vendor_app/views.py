@@ -68,6 +68,19 @@ class VendorView(APIView):
         except Exception as e:
             return Response({"message":f"An unexpected error occurred - {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class PurchaseOrderView(APIView):
+    def post(self,request):
+        try:
+            purchase_data = PurchaseOrderSerializer(data = request.data)
+            if purchase_data.is_valid():
+                purchase_data.save()
+                return Response({"message":"Purchase data created successfully","po_id":(purchase_data.data)["id"]},status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message": "Enter data is not valid","data":purchase_data.data},status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+             return Response({"message":f"An unexpected error occurred - {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
+        
 
             
 
