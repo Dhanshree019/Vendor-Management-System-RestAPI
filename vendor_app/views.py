@@ -57,7 +57,6 @@ class VendorView(APIView):
             vendor_id = request.GET.get('vendor_id')
             if vendor_id:
                 vendor_details = VendorDetails.objects.filter(id=vendor_id)
-                print(vendor_details)
                 if vendor_details.exists():
                     vendor_details.delete()
                     return Response({"message":"Vendor deleted successfully"},status=status.HTTP_200_OK)
@@ -87,10 +86,11 @@ class PurchaseOrderView(APIView):
             purchase_data = None
             if po_id:
                 purchase_data = PurchaseOrder.objects.filter(id=po_id).first()
-                purchase_data = PurchaseOrderSerializer(purchase_data).data
+                if purchase_data is not None:
+                    purchase_data = PurchaseOrderSerializer(purchase_data).data
             else:
                 purchase_data = PurchaseOrder.objects.all()
-                if len(purchase_data)>0:
+                if len(purchase_data) > 0:
                     purchase_data = PurchaseOrderSerializer(purchase_data,many=True).data
             if purchase_data:
                 return Response({"message":"Data retreived successfully","data":purchase_data},status=status.HTTP_200_OK)
@@ -101,10 +101,37 @@ class PurchaseOrderView(APIView):
              return Response({"message":f"An unexpected error occurred - {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
         
 
-            
+    def put(self,request):
+        po_id = request.GET.get("po_id")
+        if po_id:
+            purchase_data = PurchaseOrder.objects.filter(id=po_id).first()
+            updated_purchase = PurchaseOrderSerializer(instance=purchase_data,data=request.data, partial = True)
+            if updated_purchase.is_valid():
+                updated_purchase.save()
+                return Response({"message":"Data updated sucessfully","data":updated_purchase.data},status=status.HTTP_200_OK)
+            else:
+                return Response({"message":"Please provide valid data"},status=status.HTTP_400_BAD_REQUEST)    
+        else:
+             return Response({"message":f"An unexpected error occurred - {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
 
-            
-            
+    def delete(self,request):
+        try:
+            po_id = request.GET.get("po_id")
+            if po_id:
+                purchase_data = PurchaseOrder.objects.filter(id=po_id)
+                if purchase_data.exists():
+                    purchase_data.delete()
+                    return Response({"message":"Purchase order deleted successfully"},status=status.HTTP_200_OK)
+                else:
+                    return Response({"Data not found"},status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response({"message":"Purchase id required"},status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+             return Response({"message":f"An unexpected error occurred - {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
+
+                 
+                
 
 
         
