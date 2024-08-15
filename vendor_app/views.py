@@ -81,6 +81,25 @@ class PurchaseOrderView(APIView):
         except Exception as e:
              return Response({"message":f"An unexpected error occurred - {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
         
+    def get(self,request):
+        try:
+            po_id = request.GET.get("po_id")
+            purchase_data = None
+            if po_id:
+                purchase_data = PurchaseOrder.objects.filter(id=po_id).first()
+                purchase_data = PurchaseOrderSerializer(purchase_data).data
+            else:
+                purchase_data = PurchaseOrder.objects.all()
+                if len(purchase_data)>0:
+                    purchase_data = PurchaseOrderSerializer(purchase_data,many=True).data
+            if purchase_data:
+                return Response({"message":"Data retreived successfully","data":purchase_data},status=status.HTTP_200_OK)
+            else:
+                return Response({"message":"Data not found"},status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e :
+             return Response({"message":f"An unexpected error occurred - {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
+        
 
             
 
